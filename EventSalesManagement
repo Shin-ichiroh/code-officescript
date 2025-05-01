@@ -1,17 +1,49 @@
 function main(workbook: ExcelScript.Workbook) {
+    // 日付の取得
+    let now = new Date();
+    // let formattedDate = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+
+     let formattedDate = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
+
     // シートの設定
     let motoSheet = workbook.getWorksheet("Export");
-    let nayoseSheet = workbook.addWorksheet("Nayose");
-
+    let nayoseSheet = workbook.getWorksheet(formattedDate);
+    
+    if (nayoseSheet) {
+        console.log(`シート "${formattedDate}" は既に存在します。処理をスキップします。`);
+        return;
+    }
+    
+    nayoseSheet = workbook.addWorksheet(formattedDate);
+    
     // 実際の最終行を取得
     let motoLastRow = motoSheet.getUsedRange().getRowCount();
     console.log("データの最終行:", motoLastRow);
     let motoRowValues = motoSheet.getRange(`A${motoLastRow}:D${motoLastRow}`).getValues()[0];
     let conditionA = motoRowValues[0] != "" && motoRowValues[0] != null;
     let conditionD = motoRowValues[3] == "" || motoRowValues[3] == null;
-    console.log("条件A:", conditionA);
-    console.log("条件D:", conditionD);
+    console.log("条件A:", conditionA);      // 集計行の場合でもTrue、何もなければFalse
+    console.log("条件D:", conditionD);      // 正しい行であればFalse、消してよい行であればTrue
 
+    // 不要な行の場合は行削除
+    if (conditionA && conditionD) {
+        console.log("条件を満たしています。この行を削除します。");
+        motoSheet.getRange(`A${motoLastRow}:R${motoLastRow}`).delete(ExcelScript.DeleteShiftDirection.up);
+        console.log("行を削除しました。");
+    } else {
+        console.log("条件を満たしていません。行は削除されません。");
+    }
+
+    // 実際の最終行を取得２（不要な行が２つあるのでもう１回実行する）
+    motoLastRow = motoSheet.getUsedRange().getRowCount();
+    console.log("データの最終行:", motoLastRow);
+    motoRowValues = motoSheet.getRange(`A${motoLastRow}:D${motoLastRow}`).getValues()[0];
+    conditionA = motoRowValues[0] != "" && motoRowValues[0] != null;
+    conditionD = motoRowValues[3] == "" || motoRowValues[3] == null;
+    console.log("条件A:", conditionA);      // 集計行の場合でもTrue、何もなければFalse
+    console.log("条件D:", conditionD);      // 正しい行であればFalse、消してよい行であればTrue
+
+    // 不要な行の場合は行削除２
     if (conditionA && conditionD) {
         console.log("条件を満たしています。この行を削除します。");
         motoSheet.getRange(`A${motoLastRow}:R${motoLastRow}`).delete(ExcelScript.DeleteShiftDirection.up);
@@ -66,7 +98,6 @@ function main(workbook: ExcelScript.Workbook) {
         quantity = 0;
     }
 
-
     // 処理したデータを書き戻す
     nayoseSheet.getRange(`A2:R${nayoseLastRow}`).setValues(rngData1);
 
@@ -83,7 +114,5 @@ function main(workbook: ExcelScript.Workbook) {
 
 
     // ファイルの保存（注：この部分はExcel on the webでは動作しない可能性があります）
-    let now = new Date();
-    let formattedDate = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
     console.log(`ファイル名: イベント参加企業${formattedDate}`);
 }
