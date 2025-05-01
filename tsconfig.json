@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "ES2015",
+        "module": "ES2015",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "lib": ["ES2015", "DOM"],
+        "types": ["@microsoft/office-js"]
+    }
+} 
